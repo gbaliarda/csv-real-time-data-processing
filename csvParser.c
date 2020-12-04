@@ -35,6 +35,7 @@ static void readBarrios(arbolesADT arboles, char *barriosCSV)
 
         addBarrio(arboles, nombreBarrio, habitantes);
     }
+    fclose(file);
 }
 
 static void readArboles(arbolesADT arboles, char *arbolesPATH, int cantColumnas, int columnaComuna, int columnaNombre)
@@ -84,6 +85,7 @@ static void readArboles(arbolesADT arboles, char *arbolesPATH, int cantColumnas,
 
         addArbol(arboles, nombreBarrio, nombreCientifico);
     }
+    fclose(fileArboles);
 }
 
 void readCSV(arbolesADT arboles, char *barriosPATH, char *arbolesPATH, int cantColumnas, int columnaComuna, int columnaNombre)

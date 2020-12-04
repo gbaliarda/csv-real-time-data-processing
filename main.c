@@ -3,10 +3,15 @@
 #include "stdio.h"
 #include "string.h"
 #include "errno.h"
+#ifdef BUE
 #define CANTIDAD_COLUMNAS_ARBOLESCSV 13
-#define COLUMNA_COMUNA 3
+#define COLUMNA_BARRIO 3
 #define COLUMNA_NOMBRE_CIENTIFICO 8
-
+#else
+#define CANTIDAD_COLUMNAS_ARBOLESCSV 19
+#define COLUMNA_BARRIO 13
+#define COLUMNA_NOMBRE_CIENTIFICO 7
+#endif
 int main(int argc, char *argv[])
 {
   errno = 0;
@@ -19,7 +24,7 @@ int main(int argc, char *argv[])
     return 0;
   }
 
-  arbolesADT arbolesBUE = newArboles();
+  arbolesADT arboles = newArboles();
 
   if (errno != 0)
   {
@@ -28,7 +33,7 @@ int main(int argc, char *argv[])
     return 0;
   }
 
-  readCSV(arbolesBUE, argv[1], argv[2], CANTIDAD_COLUMNAS_ARBOLESCSV, COLUMNA_COMUNA, COLUMNA_NOMBRE_CIENTIFICO);
+  readCSV(arboles, argv[1], argv[2], CANTIDAD_COLUMNAS_ARBOLESCSV, COLUMNA_BARRIO, COLUMNA_NOMBRE_CIENTIFICO);
 
   // QUERIES
 
@@ -36,7 +41,7 @@ int main(int argc, char *argv[])
 
   // QUERY 1
 
-  tVectorQuery1 *vector1 = totalArbolesHabitante(arbolesBUE);
+  tVectorQuery1 *vector1 = totalArbolesHabitante(arboles);
 
   if (errno != 0)
   {
@@ -55,7 +60,7 @@ int main(int argc, char *argv[])
     else
     {
       fprintf(fPtr, "BARRIO;ARBOLES_POR_HABITANTE\n");
-      for (int i = 0; i < cantBarrios(arbolesBUE); i++)
+      for (int i = 0; i < cantBarrios(arboles); i++)
         fprintf(fPtr, "%s;%.2f\n", vector1[i].barrio, vector1[i].cantArbolesPorHab);
       printf("Archivo query1.csv creado con exito.\n");
       fclose(fPtr);
@@ -64,6 +69,6 @@ int main(int argc, char *argv[])
 
   // END QUERY 1
   free(vector1);
-  freeArboles(arbolesBUE);
+  freeArboles(arboles);
   return 0;
 }
