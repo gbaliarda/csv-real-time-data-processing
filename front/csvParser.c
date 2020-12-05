@@ -6,7 +6,7 @@
 #define MAX_LENGTH 300
 #define BLOCK 15
 
-static void readBarrios(arbolesADT arboles, char *barriosCSV)
+static void leerBarrios(arbolesADT arboles, char *barriosCSV)
 {
     FILE *file = fopen(barriosCSV, "r");
     if (!file)
@@ -33,12 +33,12 @@ static void readBarrios(arbolesADT arboles, char *barriosCSV)
         strcpy(nombreBarrio, s);
         unsigned int habitantes = atol(strtok(NULL, ";"));
 
-        addBarrio(arboles, nombreBarrio, habitantes);
+        agregarBarrio(arboles, nombreBarrio, habitantes);
     }
     fclose(file);
 }
 
-static void readArboles(arbolesADT arboles, char *arbolesPATH, int cantColumnas, int columnaComuna, int columnaNombre)
+static void leerArboles(arbolesADT arboles, char *arbolesPATH, int cantColumnas, int columnaComuna, int columnaNombre)
 {
     FILE *fileArboles = fopen(arbolesPATH, "r");
     if (!fileArboles)
@@ -83,16 +83,16 @@ static void readArboles(arbolesADT arboles, char *arbolesPATH, int cantColumnas,
             }
         }
 
-        addArbol(arboles, nombreBarrio, nombreCientifico);
+        agregarArbol(arboles, nombreBarrio, nombreCientifico);
     }
     fclose(fileArboles);
 }
 
-void readCSV(arbolesADT arboles, char *barriosPATH, char *arbolesPATH, int cantColumnas, int columnaComuna, int columnaNombre)
+void leerCSV(arbolesADT arboles, char *barriosPATH, char *arbolesPATH, int cantColumnas, int columnaComuna, int columnaNombre)
 {
-    readBarrios(arboles, barriosPATH);
+    leerBarrios(arboles, barriosPATH);
 
-    readArboles(arboles, arbolesPATH, cantColumnas, columnaComuna, columnaNombre);
+    leerArboles(arboles, arbolesPATH, cantColumnas, columnaComuna, columnaNombre);
 
-    saveData(arboles);
+    guardarData(arboles);
 }

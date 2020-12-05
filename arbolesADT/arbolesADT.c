@@ -3,17 +3,13 @@
 #include "stdlib.h"
 #include "errno.h"
 #include "arbolesADT.h"
-#define MAX_LENGTH 240
-#define CANTIDAD_COLUMNAS_ARBOLESCSV 19
-#define COLUMNA_BARRIO 13
-#define COLUMNA_NOMBRE_CIENTIFICO 7
 #define BLOCK 15
 
 typedef struct arbol
 {
   char *nombreCientifico;  // String que almacena el nombre cientifico del arbol.
   unsigned int cantTotal;  // La cantidad de arboles de la misma especie.
-  struct arbol *nextArbol; // Puntero que apunta al siguiente arbol en la lista.
+  struct arbol *proxArbol; // Puntero que apunta al siguiente arbol en la lista.
 } arbol;
 
 typedef arbol *TArbol;
@@ -23,22 +19,22 @@ typedef struct barrio
   char *barrio;                    // Nombre del barrio.
   unsigned int habitantes;         // Cantidad de habitantes del barrio.
   unsigned int cantArboles;        // Cantidad de arboles del barrio.
-  struct barrio *nextBarrioPorHab; // Puntero que apunta al siguiente barrio en el orden de la Query 1.
-  struct barrio *nextBarrioAlf;    // Puntero que apunta al siguiente barrio en el orden de la Query 2.
-  TArbol firstArbol;               // Puntero que apunta al primer elemento de la lista de los arboles de la ciudad.
+  struct barrio *proxBarrioPorHab; // Puntero que apunta al siguiente barrio en el orden de la Query 1.
+  struct barrio *proxBarrioAlf;    // Puntero que apunta al siguiente barrio en el orden de la Query 2.
+  TArbol primerArbol;              // Puntero que apunta al primer elemento de la lista de los arboles de la ciudad.
 } barrio;
 
 typedef barrio *TBarrio;
 
 typedef struct arbolesCDT
 {
-  TBarrio firstBarrioPorHab; // Puntero que apunta al primer barrio en el orden de la Query 1.
-  TBarrio firstBarrioAlf;    // Puntero que apunta al primer barrio en el orden de la Query 2.
-  barrio *vectorBarrios;     // Vector auxiliar
-  unsigned int cantBarrios;  // Cantidad de barrios que hay.
+  TBarrio primerBarrioPorHab; // Puntero que apunta al primer barrio en el orden de la Query 1.
+  TBarrio primerBarrioAlf;    // Puntero que apunta al primer barrio en el orden de la Query 2.
+  barrio *vectorBarrios;      // Vector auxiliar
+  unsigned int cantBarrios;   // Cantidad de barrios que hay.
 } arbolesCDT;
 
-void addBarrio(arbolesADT arboles, char *nombreBarrio, int habitantes)
+void agregarBarrio(arbolesADT arboles, char *nombreBarrio, int habitantes)
 {
   if (arboles->cantBarrios % BLOCK == 0)
   {
@@ -53,32 +49,32 @@ void addBarrio(arbolesADT arboles, char *nombreBarrio, int habitantes)
   arboles->vectorBarrios[arboles->cantBarrios].barrio = nombreBarrio;
   arboles->vectorBarrios[arboles->cantBarrios].habitantes = habitantes;
   arboles->vectorBarrios[arboles->cantBarrios].cantArboles = 0;
-  arboles->vectorBarrios[arboles->cantBarrios].nextBarrioPorHab = NULL;
-  arboles->vectorBarrios[arboles->cantBarrios].nextBarrioAlf = NULL;
-  arboles->vectorBarrios[arboles->cantBarrios].firstArbol = NULL;
+  arboles->vectorBarrios[arboles->cantBarrios].proxBarrioPorHab = NULL;
+  arboles->vectorBarrios[arboles->cantBarrios].proxBarrioAlf = NULL;
+  arboles->vectorBarrios[arboles->cantBarrios].primerArbol = NULL;
 
   arboles->cantBarrios += 1;
 }
 
-static TArbol addArbolesRecAlf(TArbol listaArboles, char *nombreCientifico)
+static TArbol agregarArbolesRecAlf(TArbol listaArboles, char *nombreCientifico)
 {
   int c;
 
   // Si el arbol a agregar no tiene ningun ejemplar ya agregado o la lista esta vacia, lo agrego.
   if (listaArboles == NULL || (c = strcmp(listaArboles->nombreCientifico, nombreCientifico)) > 0)
   {
-    TArbol newArbol = malloc(sizeof(arbol));
+    TArbol nuevoArbol = malloc(sizeof(arbol));
 
-    if (newArbol == NULL)
+    if (nuevoArbol == NULL)
     {
       errno = ENOMEM;
       return listaArboles;
     }
 
-    newArbol->nombreCientifico = nombreCientifico;
-    newArbol->cantTotal = 1;
-    newArbol->nextArbol = listaArboles;
-    return newArbol;
+    nuevoArbol->nombreCientifico = nombreCientifico;
+    nuevoArbol->cantTotal = 1;
+    nuevoArbol->proxArbol = listaArboles;
+    return nuevoArbol;
   }
 
   if (c == 0)
@@ -89,12 +85,12 @@ static TArbol addArbolesRecAlf(TArbol listaArboles, char *nombreCientifico)
   }
   else
     // Si c < 0 sigo recorriendo la lista.
-    listaArboles->nextArbol = addArbolesRecAlf(listaArboles->nextArbol, nombreCientifico);
+    listaArboles->proxArbol = agregarArbolesRecAlf(listaArboles->proxArbol, nombreCientifico);
 
   return listaArboles;
 }
 
-void addArbol(arbolesADT arboles, char *nombreBarrio, char *nombreCientifico)
+void agregarArbol(arbolesADT arboles, char *nombreBarrio, char *nombreCientifico)
 {
   int flag = 0;
   for (int i = 0; i < arboles->cantBarrios && flag == 0; i++)
@@ -103,73 +99,73 @@ void addArbol(arbolesADT arboles, char *nombreBarrio, char *nombreCientifico)
       flag = 1;
       arboles->vectorBarrios[i].cantArboles += 1;
       // Creo el nodo y lo agrego a la lista de arboles
-      arboles->vectorBarrios[i].firstArbol = addArbolesRecAlf(arboles->vectorBarrios[i].firstArbol, nombreCientifico);
+      arboles->vectorBarrios[i].primerArbol = agregarArbolesRecAlf(arboles->vectorBarrios[i].primerArbol, nombreCientifico);
       free(nombreBarrio);
     }
 }
 
-static TBarrio ordenarBarrioPorHab(TBarrio firstBarrioPorHab, TBarrio barrio)
+static TBarrio ordenarBarrioPorHab(TBarrio primerBarrioPorHab, TBarrio barrio)
 {
   int c;
-  if (firstBarrioPorHab == NULL || (c = (int)(100 * (firstBarrioPorHab->cantArboles / (float)firstBarrioPorHab->habitantes)) - (int)(100 * (barrio->cantArboles / (float)barrio->habitantes))) < 0 || (c == 0 && strcmp(barrio->barrio, firstBarrioPorHab->barrio) < 0))
+  if (primerBarrioPorHab == NULL || (c = (int)(100 * (primerBarrioPorHab->cantArboles / (float)primerBarrioPorHab->habitantes)) - (int)(100 * (barrio->cantArboles / (float)barrio->habitantes))) < 0 || (c == 0 && strcmp(barrio->barrio, primerBarrioPorHab->barrio) < 0))
   {
-    barrio->nextBarrioPorHab = firstBarrioPorHab;
+    barrio->proxBarrioPorHab = primerBarrioPorHab;
     return barrio;
   }
 
-  firstBarrioPorHab->nextBarrioPorHab = ordenarBarrioPorHab(firstBarrioPorHab->nextBarrioPorHab, barrio);
-  return firstBarrioPorHab;
+  primerBarrioPorHab->proxBarrioPorHab = ordenarBarrioPorHab(primerBarrioPorHab->proxBarrioPorHab, barrio);
+  return primerBarrioPorHab;
 }
 
-static TBarrio ordenarBarrioAlf(TBarrio firstBarrioAlf, TBarrio barrio)
+static TBarrio ordenarBarrioAlf(TBarrio primerBarrioAlf, TBarrio barrio)
 {
-  if (firstBarrioAlf == NULL || strcmp(barrio->barrio, firstBarrioAlf->barrio) < 0)
+  if (primerBarrioAlf == NULL || strcmp(barrio->barrio, primerBarrioAlf->barrio) < 0)
   {
-    barrio->nextBarrioAlf = firstBarrioAlf;
+    barrio->proxBarrioAlf = primerBarrioAlf;
     return barrio;
   }
 
-  firstBarrioAlf->nextBarrioAlf = ordenarBarrioAlf(firstBarrioAlf->nextBarrioAlf, barrio);
-  return firstBarrioAlf;
+  primerBarrioAlf->proxBarrioAlf = ordenarBarrioAlf(primerBarrioAlf->proxBarrioAlf, barrio);
+  return primerBarrioAlf;
 }
 
-void saveData(arbolesADT arboles)
+void guardarData(arbolesADT arboles)
 {
   for (int i = 0; i < arboles->cantBarrios; i++)
   {
-    TBarrio newBarrio = malloc(sizeof(barrio));
-    if (newBarrio == NULL)
+    TBarrio nuevoBarrio = malloc(sizeof(barrio));
+    if (nuevoBarrio == NULL)
     {
       errno = ENOMEM;
       // Si falla al reservar memoria, libero la memoria que ocupaba el vector.
       free(arboles->vectorBarrios);
       return;
     }
-    newBarrio->barrio = arboles->vectorBarrios[i].barrio;
-    newBarrio->habitantes = arboles->vectorBarrios[i].habitantes;
-    newBarrio->cantArboles = arboles->vectorBarrios[i].cantArboles;
-    newBarrio->nextBarrioPorHab = NULL;
-    newBarrio->nextBarrioAlf = NULL;
-    newBarrio->firstArbol = arboles->vectorBarrios[i].firstArbol;
+    nuevoBarrio->barrio = arboles->vectorBarrios[i].barrio;
+    nuevoBarrio->habitantes = arboles->vectorBarrios[i].habitantes;
+    nuevoBarrio->cantArboles = arboles->vectorBarrios[i].cantArboles;
+    nuevoBarrio->proxBarrioPorHab = NULL;
+    nuevoBarrio->proxBarrioAlf = NULL;
+    nuevoBarrio->primerArbol = arboles->vectorBarrios[i].primerArbol;
 
     // Ordeno la tail que apunta al siguiente en orden descendente del cociente entre la cantidad de arboles y los habitantes por comuna, con el cociente truncado a 2 decimales y tambien luego ordenado alfabeticamente.
-    arboles->firstBarrioPorHab = ordenarBarrioPorHab(arboles->firstBarrioPorHab, newBarrio);
+    arboles->primerBarrioPorHab = ordenarBarrioPorHab(arboles->primerBarrioPorHab, nuevoBarrio);
 
-    arboles->firstBarrioAlf = ordenarBarrioAlf(arboles->firstBarrioAlf, newBarrio);
+    arboles->primerBarrioAlf = ordenarBarrioAlf(arboles->primerBarrioAlf, nuevoBarrio);
   }
 
   free(arboles->vectorBarrios);
 }
 
-arbolesADT newArboles()
+arbolesADT nuevoArboles()
 {
-  arbolesADT newArbol = calloc(1, sizeof(arbolesCDT));
-  if (newArbol == NULL)
+  arbolesADT nuevoArbol = calloc(1, sizeof(arbolesCDT));
+  if (nuevoArbol == NULL)
   {
     errno = ENOMEM;
     return NULL;
   }
-  return newArbol;
+  return nuevoArbol;
 }
 
 unsigned int cantBarrios(arbolesADT arbol)
@@ -187,27 +183,27 @@ tVectorQuery1 *totalArbolesHabitante(arbolesADT arboles)
     return NULL;
   }
   int i = 0;
-  TBarrio aux = arboles->firstBarrioPorHab;
+  TBarrio aux = arboles->primerBarrioPorHab;
   while (aux != NULL)
   {
     arbolesPorHabitante[i].barrio = aux->barrio;
     arbolesPorHabitante[i++].cantArbolesPorHab = (unsigned int)(100 * (aux->cantArboles / (float)aux->habitantes)) / 100.0;
-    aux = aux->nextBarrioPorHab;
+    aux = aux->proxBarrioPorHab;
   }
   return arbolesPorHabitante;
 }
 
-static char *especieMasPopular(TArbol firstArbol)
+static char *especieMasPopular(TArbol primerArbol)
 {
-  TArbol arbolMasPopular = firstArbol;
+  TArbol arbolMasPopular = primerArbol;
 
-  TArbol aux = firstArbol->nextArbol;
+  TArbol aux = primerArbol->proxArbol;
   while (aux != NULL)
   {
     if (arbolMasPopular->cantTotal < aux->cantTotal)
       arbolMasPopular = aux;
 
-    aux = aux->nextArbol;
+    aux = aux->proxArbol;
   }
 
   return arbolMasPopular->nombreCientifico;
@@ -222,26 +218,26 @@ tVectorQuery2 *especieMasPopularPorBarrio(arbolesADT arboles)
     return NULL;
   }
   int i = 0;
-  TBarrio aux = arboles->firstBarrioAlf;
+  TBarrio aux = arboles->primerBarrioAlf;
   while (aux != NULL)
   {
     vectorQuery2[i].barrio = aux->barrio;
-    vectorQuery2[i++].nombreCientifico = aux->firstArbol != NULL ? especieMasPopular(aux->firstArbol) : "No existen arboles";
-    aux = aux->nextBarrioAlf;
+    vectorQuery2[i++].nombreCientifico = aux->primerArbol != NULL ? especieMasPopular(aux->primerArbol) : "No existen arboles";
+    aux = aux->proxBarrioAlf;
   }
   return vectorQuery2;
 }
 
-static void freeArbolesRec(TArbol firstArbol)
+static void freeArbolesRec(TArbol primerArbol)
 {
-  if (firstArbol == NULL)
+  if (primerArbol == NULL)
     return;
 
-  freeArbolesRec(firstArbol->nextArbol);
+  freeArbolesRec(primerArbol->proxArbol);
 
-  free(firstArbol->nombreCientifico);
+  free(primerArbol->nombreCientifico);
 
-  free(firstArbol);
+  free(primerArbol);
 }
 
 static void freeBarriosRec(TBarrio firstBarrio)
@@ -249,11 +245,11 @@ static void freeBarriosRec(TBarrio firstBarrio)
   if (firstBarrio == NULL)
     return;
 
-  freeBarriosRec(firstBarrio->nextBarrioPorHab);
+  freeBarriosRec(firstBarrio->proxBarrioPorHab);
 
   free(firstBarrio->barrio);
 
-  freeArbolesRec(firstBarrio->firstArbol);
+  freeArbolesRec(firstBarrio->primerArbol);
 
   free(firstBarrio);
 }
@@ -261,7 +257,7 @@ static void freeBarriosRec(TBarrio firstBarrio)
 void freeArboles(arbolesADT arboles)
 {
   // Liberar lista barrios
-  freeBarriosRec(arboles->firstBarrioPorHab);
+  freeBarriosRec(arboles->primerBarrioPorHab);
 
   free(arboles);
 }

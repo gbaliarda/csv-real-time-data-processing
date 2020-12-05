@@ -1,6 +1,7 @@
-#include "arbolesADT.h"
+#include "./../arbolesADT/arbolesADT.h"
 #include "csvParser.h"
 #include "stdio.h"
+#include "stdlib.h"
 #include "string.h"
 #include "errno.h"
 #ifdef BUE
@@ -24,7 +25,7 @@ int main(int argc, char *argv[])
     return 0;
   }
 
-  arbolesADT arboles = newArboles();
+  arbolesADT arboles = nuevoArboles();
 
   if (errno != 0)
   {
@@ -33,7 +34,7 @@ int main(int argc, char *argv[])
     return 0;
   }
 
-  readCSV(arboles, argv[1], argv[2], CANTIDAD_COLUMNAS_ARBOLESCSV, COLUMNA_BARRIO, COLUMNA_NOMBRE_CIENTIFICO);
+  leerCSV(arboles, argv[1], argv[2], CANTIDAD_COLUMNAS_ARBOLESCSV, COLUMNA_BARRIO, COLUMNA_NOMBRE_CIENTIFICO);
 
   // QUERIES
 
@@ -50,7 +51,7 @@ int main(int argc, char *argv[])
   }
   else
   {
-    fPtr = fopen("./dataset/query1.csv", "w");
+    fPtr = fopen("./queries/query1.csv", "w");
 
     if (fPtr == NULL)
     {
@@ -80,7 +81,7 @@ int main(int argc, char *argv[])
   }
   else
   {
-    fPtr = fopen("./dataset/query2.csv", "w");
+    fPtr = fopen("./queries/query2.csv", "w");
 
     if (fPtr == NULL)
     {

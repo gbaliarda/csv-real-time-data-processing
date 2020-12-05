@@ -1,8 +1,9 @@
 COMPILER=gcc
 OUTPUT_FILEBUE=arbolesADTBUE
 OUTPUT_FILEVAN=arbolesADTVAN
+QUERIES=queries
 CFLAGS=-std=c99 -pedantic -Wall -fsanitize=address
-FILES=main.c arbolesADT.c csvParser.c
+FILES=./front/main.c ./arbolesADT/arbolesADT.c ./front/csvParser.c
 all: arbolesADTBUE arbolesADTVAN
 
 arbolesADTBUE: $(FILESBUE)
@@ -14,3 +15,4 @@ arbolesADTVAN: $(FILESVAN)
 clean:
 	rm -r $(OUTPUT_FILEBUE)
 	rm -r $(OUTPUT_FILEVAN)
+	rm -r $(QUERIES)/*
