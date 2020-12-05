@@ -3,7 +3,7 @@
 #include "string.h"
 #include "stdlib.h"
 #include "errno.h"
-#define MAX_LENGTH 240
+#define MAX_LENGTH 300
 #define BLOCK 15
 
 static void readBarrios(arbolesADT arboles, char *barriosCSV)
