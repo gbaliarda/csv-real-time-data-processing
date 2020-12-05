@@ -3,25 +3,55 @@
 #include "string.h"
 #include "stdlib.h"
 #include "errno.h"
-#define MAX_LENGTH 300
-#define BLOCK 15
+#define LONGITUD_MAX 300
+#define BLOQUE 15
 
-static void leerBarrios(arbolesADT arboles, char *barriosCSV)
+static FILE *revisarArchivo(char *ruta, int cantColumnas)
 {
-    FILE *file = fopen(barriosCSV, "r");
+    FILE *file = fopen(ruta, "r");
+
+    // Si no existe el archivo o no logra abrirlo
+    if (!file)
+        return NULL;
+
+    char c[LONGITUD_MAX];
+    char *filaAux;
+
+    filaAux = fgets(c, LONGITUD_MAX, file);
+
+    // Si la primer fila es vacia
+    if (filaAux == NULL)
+        return NULL;
+    // Si la cantidad de columnas es erronea
+    else
+    {
+        int cantidad = 0;
+        while (*filaAux != 0)
+        {
+            if (*filaAux == ';')
+                cantidad++;
+            filaAux++;
+        }
+        if (cantidad != cantColumnas - 1)
+            return NULL;
+    }
+
+    return file;
+}
+
+static void leerBarrios(arbolesADT arboles, FILE *file)
+{
     if (!file)
     {
         errno = ENOENT;
         return;
     }
-    char c[MAX_LENGTH];
-    // Descartamos la primera fila que contiene los nombres de cada columna
-    fgets(c, MAX_LENGTH, file);
+    char c[LONGITUD_MAX];
 
     char *s, *nombreBarrio;
 
     // Recorremos cada fila del archivo y para cada fila, tomamos la informacion de cada columna que nos sirve.
-    while (fgets(c, MAX_LENGTH, file) != NULL)
+    while (fgets(c, LONGITUD_MAX, file) != NULL)
     {
         s = strtok(c, ";");
         nombreBarrio = malloc(sizeof(char) * strlen(s) + 1);
@@ -38,22 +68,22 @@ static void leerBarrios(arbolesADT arboles, char *barriosCSV)
     fclose(file);
 }
 
-static void leerArboles(arbolesADT arboles, char *arbolesPATH, int cantColumnas, int columnaComuna, int columnaNombre)
+static void leerArboles(arbolesADT arboles, FILE *fileArboles, int cantColumnas, int columnaComuna, int columnaNombre)
 {
-    FILE *fileArboles = fopen(arbolesPATH, "r");
-    if (!fileArboles)
+    if (!fileArboles || errno != 0)
     {
         errno = ENOENT;
         return;
     }
 
-    char c[MAX_LENGTH];
+    // Si la cantidad de barrios es 0 no agrega ningun arbol.
+    if (cantBarrios(arboles) == 0)
+        return;
 
-    // Descartamos la primer lista ya que contiene los nombres de cada columna.
-    fgets(c, MAX_LENGTH, fileArboles);
+    char c[LONGITUD_MAX];
 
     // Extraemos los datos que son utiles para las querys para cada ejemplar de arbol
-    while (fgets(c, MAX_LENGTH, fileArboles) != NULL)
+    while (fgets(c, LONGITUD_MAX, fileArboles) != NULL)
     {
         strtok(c, ";");
         char *nombreCientifico, *s, *nombreBarrio;
@@ -88,11 +118,23 @@ static void leerArboles(arbolesADT arboles, char *arbolesPATH, int cantColumnas,
     fclose(fileArboles);
 }
 
-void leerCSV(arbolesADT arboles, char *barriosPATH, char *arbolesPATH, int cantColumnas, int columnaComuna, int columnaNombre)
+void leerCSV(arbolesADT arboles, char *barriosPATH, char *arbolesPATH, int cantColumnasBarriosCSV, int cantColumnasArbolesCSV, int columnaComuna, int columnaNombre)
 {
-    leerBarrios(arboles, barriosPATH);
+    FILE *barriosCSV = revisarArchivo(barriosPATH, cantColumnasBarriosCSV);
 
-    leerArboles(arboles, arbolesPATH, cantColumnas, columnaComuna, columnaNombre);
+    FILE *arbolesCSV = revisarArchivo(arbolesPATH, cantColumnasArbolesCSV);
 
+    if (barriosCSV == NULL || arbolesCSV == NULL)
+    {
+        errno = ENOENT;
+        return;
+    }
+
+    leerBarrios(arboles, barriosCSV);
+    if (errno != 0)
+        return;
+    leerArboles(arboles, arbolesCSV, cantColumnasArbolesCSV, columnaComuna, columnaNombre);
+    if (errno != 0)
+        return;
     guardarData(arboles);
 }

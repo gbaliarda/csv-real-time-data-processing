@@ -161,10 +161,7 @@ arbolesADT nuevoArboles()
 {
   arbolesADT nuevoArbol = calloc(1, sizeof(arbolesCDT));
   if (nuevoArbol == NULL)
-  {
     errno = ENOMEM;
-    return NULL;
-  }
   return nuevoArbol;
 }
 

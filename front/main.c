@@ -6,13 +6,16 @@
 #include "errno.h"
 #ifdef BUE
 #define CANTIDAD_COLUMNAS_ARBOLESCSV 13
+#define CANTIDAD_COLUMNAS_BARRIOCSV 2
 #define COLUMNA_BARRIO 3
 #define COLUMNA_NOMBRE_CIENTIFICO 8
 #else
 #define CANTIDAD_COLUMNAS_ARBOLESCSV 19
+#define CANTIDAD_COLUMNAS_BARRIOCSV 2
 #define COLUMNA_BARRIO 13
 #define COLUMNA_NOMBRE_CIENTIFICO 7
 #endif
+
 int main(int argc, char *argv[])
 {
   errno = 0;
@@ -34,11 +37,19 @@ int main(int argc, char *argv[])
     return 0;
   }
 
-  leerCSV(arboles, argv[1], argv[2], CANTIDAD_COLUMNAS_ARBOLESCSV, COLUMNA_BARRIO, COLUMNA_NOMBRE_CIENTIFICO);
+  leerCSV(arboles, argv[1], argv[2], CANTIDAD_COLUMNAS_BARRIOCSV, CANTIDAD_COLUMNAS_ARBOLESCSV, COLUMNA_BARRIO, COLUMNA_NOMBRE_CIENTIFICO);
+
+  if (errno != 0)
+  {
+    fprintf(stderr, "Error en la lectura de los archivos CSV.\n");
+    free(arboles);
+    return 0;
+  }
 
   // QUERIES
 
   FILE *fPtr;
+  char *nombreQuery;
 
   // QUERY 1
 
@@ -51,19 +62,25 @@ int main(int argc, char *argv[])
   }
   else
   {
-    fPtr = fopen("./queries/query1.csv", "w");
+#ifdef BUE
+    nombreQuery = "query1BUE.csv";
+    fPtr = fopen("./queries/query1BUE.csv", "w");
+#else
+    nombreQuery = "query1VAN.csv";
+    fPtr = fopen("./queries/query1VAN.csv", "w");
+#endif
 
     if (fPtr == NULL)
     {
       errno = ENOENT;
-      fprintf(stderr, "File Error al crear query1.csv: %s\n", strerror(errno));
+      fprintf(stderr, "File Error al crear %s: %s\n", nombreQuery, strerror(errno));
     }
     else
     {
       fprintf(fPtr, "BARRIO;ARBOLES_POR_HABITANTE\n");
       for (int i = 0; i < cantBarrios(arboles); i++)
         fprintf(fPtr, "%s;%.2f\n", vector1[i].barrio, vector1[i].cantArbolesPorHab);
-      printf("Archivo query1.csv creado con exito.\n");
+      printf("Archivo %s creado con exito.\n", nombreQuery);
       fclose(fPtr);
     }
   }
@@ -81,19 +98,25 @@ int main(int argc, char *argv[])
   }
   else
   {
-    fPtr = fopen("./queries/query2.csv", "w");
+#ifdef BUE
+    nombreQuery = "query2BUE.csv";
+    fPtr = fopen("./queries/query2BUE.csv", "w");
+#else
+    nombreQuery = "query2VAN.csv";
+    fPtr = fopen("./queries/query2VAN.csv", "w");
+#endif
 
     if (fPtr == NULL)
     {
       errno = ENOENT;
-      fprintf(stderr, "File Error al crear query2.csv: %s\n", strerror(errno));
+      fprintf(stderr, "File Error al crear %s: %s\n", nombreQuery, strerror(errno));
     }
     else
     {
       fprintf(fPtr, "BARRIO;NOMBRE_CIENTIFICO\n");
       for (int i = 0; i < cantBarrios(arboles); i++)
         fprintf(fPtr, "%s;%s\n", vector2[i].barrio, vector2[i].nombreCientifico);
-      printf("Archivo query2.csv creado con exito.\n");
+      printf("Archivo %s creado con exito.\n", nombreQuery);
       fclose(fPtr);
     }
   }

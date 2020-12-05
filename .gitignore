@@ -1,4 +1,4 @@
 *.txt
-queries
+queries/*
 csv
 *.exe
