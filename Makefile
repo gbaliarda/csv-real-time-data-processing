@@ -13,6 +13,6 @@ arbolesADTVAN: $(FILESVAN)
 	$(COMPILER) $(CFLAGS) -o $(OUTPUT_FILEVAN) $(FILES) -D VAN
 
 clean:
-	rm -r $(OUTPUT_FILEBUE)
-	rm -r $(OUTPUT_FILEVAN)
-	rm -r $(QUERIES)/*
+	rm -rf $(OUTPUT_FILEBUE)
+	rm -rf $(OUTPUT_FILEVAN)
+	rm -rf $(QUERIES)/*

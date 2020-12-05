@@ -92,16 +92,17 @@ static TArbol agregarArbolesRecAlf(TArbol listaArboles, char *nombreCientifico)
 
 void agregarArbol(arbolesADT arboles, char *nombreBarrio, char *nombreCientifico)
 {
-  int flag = 0;
-  for (int i = 0; i < arboles->cantBarrios && flag == 0; i++)
+  for (int i = 0; i < arboles->cantBarrios; i++)
     if (strcmp(arboles->vectorBarrios[i].barrio, nombreBarrio) == 0)
     {
-      flag = 1;
       arboles->vectorBarrios[i].cantArboles += 1;
       // Creo el nodo y lo agrego a la lista de arboles
       arboles->vectorBarrios[i].primerArbol = agregarArbolesRecAlf(arboles->vectorBarrios[i].primerArbol, nombreCientifico);
       free(nombreBarrio);
+      return;
     }
+  free(nombreBarrio);
+  free(nombreCientifico);
 }
 
 static TBarrio ordenarBarrioPorHab(TBarrio primerBarrioPorHab, TBarrio barrio)
