@@ -2,7 +2,7 @@ COMPILER=gcc
 OUTPUT_FILEBUE=arbolesADTBUE
 OUTPUT_FILEVAN=arbolesADTVAN
 CFLAGS=-std=c99 -pedantic -Wall -fsanitize=address
-FILES=main.c arbolesADT.c
+FILES=main.c arbolesADT.c csvParser.c
 all: arbolesADTBUE arbolesADTVAN
 
 arbolesADTBUE: $(FILESBUE)

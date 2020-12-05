@@ -68,7 +68,39 @@ int main(int argc, char *argv[])
   }
 
   // END QUERY 1
+
+  // QUERY 2
+
+  tVectorQuery2 *vector2 = especieMasPopularPorBarrio(arboles);
+
+  if (errno != 0)
+  {
+    fprintf(stderr, "Error en la Query 2: %s\n", strerror(errno));
+    errno = 0;
+  }
+  else
+  {
+    fPtr = fopen("./dataset/query2.csv", "w");
+
+    if (fPtr == NULL)
+    {
+      errno = ENOENT;
+      fprintf(stderr, "File Error al crear query2.csv: %s\n", strerror(errno));
+    }
+    else
+    {
+      fprintf(fPtr, "BARRIO;NOMBRE_CIENTIFICO\n");
+      for (int i = 0; i < cantBarrios(arboles); i++)
+        fprintf(fPtr, "%s;%s\n", vector2[i].barrio, vector2[i].nombreCientifico);
+      printf("Archivo query2.csv creado con exito.\n");
+      fclose(fPtr);
+    }
+  }
+
+  // END QUERY 2
+
   free(vector1);
+  free(vector2);
   freeArboles(arboles);
   return 0;
 }

@@ -9,6 +9,12 @@ typedef struct tVectorQuery1
   float cantArbolesPorHab;
 } tVectorQuery1;
 
+typedef struct tVectorQuery2
+{
+  char *barrio;
+  char *nombreCientifico;
+} tVectorQuery2;
+
 // Crea un nuevo TAD
 arbolesADT newArboles();
 
@@ -18,13 +24,13 @@ void addArbol(arbolesADT arboles, char *nombreBarrio, char *nombreCientifico);
 
 void saveData(arbolesADT arboles);
 // Devuelve la cantidad de comunas que hay en la ciudad.
-unsigned int cantBarrios(arbolesADT arbol);
-
-// Devuelve la cantidad de especies de arboles distintas que hay.
-unsigned int cantEspecies(arbolesADT arbol);
+unsigned int cantBarrios(arbolesADT arboles);
 
 // QUERY 1
-tVectorQuery1 *totalArbolesHabitante(arbolesADT arbol);
+tVectorQuery1 *totalArbolesHabitante(arbolesADT arboles);
+
+// QUERY 2
+tVectorQuery2 *especieMasPopularPorBarrio(arbolesADT arboles);
 
 // NO VA
 // tVectorQuery1 *totalArbolesBarrio(arbolesADT arbol);
@@ -34,6 +40,6 @@ tVectorQuery1 *totalArbolesHabitante(arbolesADT arbol);
 // tVectorQuery3 *diametroPromedioArbol(arbolesADT arbol);
 
 // Libera la memoria ocupada por el TAD
-void freeArboles(arbolesADT arbol);
+void freeArboles(arbolesADT arboles);
 
 #endif
