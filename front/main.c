@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
   }
   else
   {
-    fPtr = fopen("./queries/query1.csv", "w");
+    fPtr = fopen("./query1.csv", "w");
 
     if (fPtr == NULL)
     {
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
   }
   else
   {
-    fPtr = fopen("./queries/query2.csv", "w");
+    fPtr = fopen("./query2.csv", "w");
 
     if (fPtr == NULL)
     {
