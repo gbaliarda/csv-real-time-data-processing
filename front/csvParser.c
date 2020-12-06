@@ -50,7 +50,7 @@ static void leerBarrios(arbolesADT arboles, FILE *file)
 
     char *s, *nombreBarrio;
 
-    // Recorremos cada fila del archivo y para cada fila, tomamos la informacion de cada columna que nos sirve.
+    // Recorremos cada fila del archivo y para cada fila, ignoramos la primer fila porque ya la utilizamos,tomamos la informacion de cada columna que nos sirve.
     while (fgets(c, LONGITUD_MAX, file) != NULL)
     {
         s = strtok(c, ";");
@@ -70,7 +70,7 @@ static void leerBarrios(arbolesADT arboles, FILE *file)
 
 static void leerArboles(arbolesADT arboles, FILE *fileArboles, int cantColumnas, int columnaComuna, int columnaNombre)
 {
-    if (!fileArboles || errno != 0)
+    if (!fileArboles)
     {
         errno = ENOENT;
         return;
@@ -82,7 +82,7 @@ static void leerArboles(arbolesADT arboles, FILE *fileArboles, int cantColumnas,
 
     char c[LONGITUD_MAX];
 
-    // Extraemos los datos que son utiles para las querys para cada ejemplar de arbol
+    // Extraemos los datos que son utiles para las querys para cada ejemplar de arbol, la primer fila ya es utilizada previamente.
     while (fgets(c, LONGITUD_MAX, fileArboles) != NULL)
     {
         strtok(c, ";");
@@ -120,21 +120,25 @@ static void leerArboles(arbolesADT arboles, FILE *fileArboles, int cantColumnas,
 
 void leerCSV(arbolesADT arboles, char *barriosPATH, char *arbolesPATH, int cantColumnasBarriosCSV, int cantColumnasArbolesCSV, int columnaComuna, int columnaNombre)
 {
+    // Checkea el archivo de barrios
     FILE *barriosCSV = revisarArchivo(barriosPATH, cantColumnasBarriosCSV);
 
+    // Checkea el archivo de arboles
     FILE *arbolesCSV = revisarArchivo(arbolesPATH, cantColumnasArbolesCSV);
 
     if (barriosCSV == NULL || arbolesCSV == NULL)
     {
-        errno = ENOENT;
+        errno = EINVAL;
         return;
     }
 
     leerBarrios(arboles, barriosCSV);
     if (errno != 0)
         return;
+
     leerArboles(arboles, arbolesCSV, cantColumnasArbolesCSV, columnaComuna, columnaNombre);
     if (errno != 0)
         return;
+
     guardarData(arboles);
 }

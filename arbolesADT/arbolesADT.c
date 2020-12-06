@@ -36,6 +36,7 @@ typedef struct arbolesCDT
 
 void agregarBarrio(arbolesADT arboles, char *nombreBarrio, int habitantes)
 {
+  // Agrando el vector si no tiene espacio.
   if (arboles->cantBarrios % BLOCK == 0)
   {
     arboles->vectorBarrios = realloc(arboles->vectorBarrios, sizeof(barrio) * (arboles->cantBarrios + BLOCK));
@@ -46,6 +47,7 @@ void agregarBarrio(arbolesADT arboles, char *nombreBarrio, int habitantes)
     }
   }
 
+  // Guardo toda la informacion del barrio en el vector.
   arboles->vectorBarrios[arboles->cantBarrios].barrio = nombreBarrio;
   arboles->vectorBarrios[arboles->cantBarrios].habitantes = habitantes;
   arboles->vectorBarrios[arboles->cantBarrios].cantArboles = 0;
@@ -101,6 +103,7 @@ void agregarArbol(arbolesADT arboles, char *nombreBarrio, char *nombreCientifico
       free(nombreBarrio);
       return;
     }
+  // En caso de que no se agregue el arbol (Al no tener un barrio), libero la memoria
   free(nombreBarrio);
   free(nombreCientifico);
 }
@@ -149,9 +152,10 @@ void guardarData(arbolesADT arboles)
     nuevoBarrio->proxBarrioAlf = NULL;
     nuevoBarrio->primerArbol = arboles->vectorBarrios[i].primerArbol;
 
-    // Ordeno la tail que apunta al siguiente en orden descendente del cociente entre la cantidad de arboles y los habitantes por comuna, con el cociente truncado a 2 decimales y tambien luego ordenado alfabeticamente.
+    // Ordeno la lista en orden descendente por el total de arboles por habitante y luego alfabeticamente.
     arboles->primerBarrioPorHab = ordenarBarrioPorHab(arboles->primerBarrioPorHab, nuevoBarrio);
 
+    // Ordeno la lista alfabeticamente
     arboles->primerBarrioAlf = ordenarBarrioAlf(arboles->primerBarrioAlf, nuevoBarrio);
   }
 
@@ -173,7 +177,7 @@ unsigned int cantBarrios(arbolesADT arbol)
 
 tVectorQuery1 *totalArbolesHabitante(arbolesADT arboles)
 {
-  // Armo un vector de una estructura que guarde el nombre del barrio y el cociente entre la cantidad de arboles y los habitantes de esta comuna.
+  // Armo un vector de una estructura que guarde el nombre del barrio y el total de arboles por habitantes del mismo.
   tVectorQuery1 *arbolesPorHabitante = malloc(sizeof(tVectorQuery1) * arboles->cantBarrios);
   if (arbolesPorHabitante == NULL)
   {
@@ -209,6 +213,7 @@ static char *especieMasPopular(TArbol primerArbol)
 
 tVectorQuery2 *especieMasPopularPorBarrio(arbolesADT arboles)
 {
+  // Vector que contiene el nombre del barrio junto al nombre de la especie mas popular, para cada uno de los barrios.
   tVectorQuery2 *vectorQuery2 = malloc(sizeof(tVectorQuery2) * arboles->cantBarrios);
   if (vectorQuery2 == NULL)
   {
@@ -220,12 +225,14 @@ tVectorQuery2 *especieMasPopularPorBarrio(arbolesADT arboles)
   while (aux != NULL)
   {
     vectorQuery2[i].barrio = aux->barrio;
+    // Si existe por lo menos un arbol, calculo el que mas veces esta.
     vectorQuery2[i++].nombreCientifico = aux->primerArbol != NULL ? especieMasPopular(aux->primerArbol) : "No existen arboles";
     aux = aux->proxBarrioAlf;
   }
   return vectorQuery2;
 }
 
+// Libera la lista de árboles de cada barrio.
 static void freeArbolesRec(TArbol primerArbol)
 {
   if (primerArbol == NULL)
@@ -238,6 +245,7 @@ static void freeArbolesRec(TArbol primerArbol)
   free(primerArbol);
 }
 
+// Libera la lista de barrios.
 static void freeBarriosRec(TBarrio firstBarrio)
 {
   if (firstBarrio == NULL)
@@ -252,9 +260,9 @@ static void freeBarriosRec(TBarrio firstBarrio)
   free(firstBarrio);
 }
 
+// Libera el TAD.
 void freeArboles(arbolesADT arboles)
 {
-  // Liberar lista barrios
   freeBarriosRec(arboles->primerBarrioPorHab);
 
   free(arboles);
